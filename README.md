@@ -9,7 +9,8 @@ Refactored and modified version of CorrVAE [1], adjusted for handling images ffr
 3. [Run](#run)
 4. [Data](#data)
 5. [Code Structure](#code-structure)
-6. [References](#references)
+6. [Experiments](#experiments)
+7. [References](#references)
 
 ## Project Overview
 
@@ -53,6 +54,10 @@ TBA
 │
 └──  train.ipynb              - training loop
 ```
+
+## Experiments
+
+TBA
 
 ## References
 
