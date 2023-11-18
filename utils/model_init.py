@@ -1,7 +1,7 @@
 """
 Model initialization proposed and implemented in DISVAE.
-
 """
+
 import torch
 from torch import nn
 
