@@ -11,8 +11,8 @@ class EncoderControlVAE(nn.Module):
     def __init__(
             self,
             img_size,
-            latent_dim=10,
-            num_prop=2,
+            latent_dim_z=10,
+            latent_dim_w=10,
             hidden_dim=256,
             hid_channels=32,
             device='cpu',
@@ -24,9 +24,9 @@ class EncoderControlVAE(nn.Module):
 
         self.hid_channels = hid_channels
         self.hidden_dim = hidden_dim
-        self.latent_dim = latent_dim
+        self.latent_dim_z = latent_dim_z
+        self.latent_dim_w = latent_dim_w
         self.img_size = img_size
-        self.num_prop = num_prop
 
         kernel_size = 4
         cnn_kwargs = dict(
@@ -50,7 +50,8 @@ class EncoderControlVAE(nn.Module):
 
         # Fully connected layers for mean and variance
         self.mu_logvar_gen = nn.Linear(
-            self.hidden_dim, (self.latent_dim+self.num_prop) * 2).to(device)
+            self.hidden_dim,
+            (self.latent_dim_z+self.latent_dim_w) * 2).to(device)
 
     def forward(self, x):
         batch_size = x.size(0)
@@ -65,11 +66,11 @@ class EncoderControlVAE(nn.Module):
 
         mu_logvar = self.mu_logvar_gen(x_z)
         mu, logvar = mu_logvar.view(
-            -1, self.latent_dim+self.num_prop, 2).unbind(-1)
+            -1, self.latent_dim_z+self.latent_dim_w, 2).unbind(-1)
 
         return (
-            mu[:, :self.latent_dim],
-            mu[:, self.latent_dim:],
-            logvar[:, :self.latent_dim],
-            logvar[:, self.latent_dim:]
+            mu[:, :self.latent_dim_z],
+            mu[:, self.latent_dim_z:],
+            logvar[:, :self.latent_dim_z],
+            logvar[:, self.latent_dim_z:]
         )

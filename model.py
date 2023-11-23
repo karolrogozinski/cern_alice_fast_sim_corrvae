@@ -12,8 +12,16 @@ from utils.model_init import weights_init
 
 
 class ControlVAE(nn.Module):
-    def __init__(self, img_size, encoder,
-                 decoder, latent_dim, num_prop, device='cpu'):
+    def __init__(
+            self,
+            img_size,
+            encoder,
+            decoder,
+            latent_dim,
+            latent_dim_prop,
+            num_prop,
+            hid_channels=32,
+            device='cpu'):
         """
         Class which defines model and forward pass.
 
@@ -30,19 +38,21 @@ class ControlVAE(nn.Module):
         super(ControlVAE, self).__init__()
 
         self.num_prop = num_prop
-        self.latent_dim = latent_dim
+        self.latent_dim_z = latent_dim
+        self.latent_dim_w = latent_dim_prop
         self.img_size = img_size
         self.num_pixels = self.img_size[1] * self.img_size[2]
         self.device = device
 
-        self.encoder = encoder(img_size, self.latent_dim,
-                               self.latent_dim, device=device)
-        self.decoder = decoder(img_size, self.latent_dim,
-                               self.latent_dim, self.num_prop, device=device)
+        self.encoder = encoder(img_size, self.latent_dim_z,
+                               self.latent_dim_w, hid_channels, device=device)
+        self.decoder = decoder(img_size, self.latent_dim_z,
+                               self.latent_dim_w, self.num_prop,
+                               hid_channels, device=device)
 
         self.apply(weights_init)
         self.w_mask = torch.nn.Parameter(
-            torch.randn(self.num_prop, self.latent_dim, 2))
+            torch.randn(self.num_prop, self.latent_dim_w, 2))
 
     def reparameterize(self, mean, logvar):
         """

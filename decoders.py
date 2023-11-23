@@ -87,6 +87,7 @@ class DecoderControlVAE(nn.Module):
     def mask(self, w, w_mask):
         w = w.view(w.shape[0], 1, -1)
         w = w.repeat(1, self.num_prop, 1)
+
         w = w * w_mask
 
         wp = [self.wp_lin_list[i](w[:, i, :].to(self.device))
