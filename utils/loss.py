@@ -151,7 +151,7 @@ def reg_mask(mask):
 
 def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
                latent_sample_z, latent_dist_z, w_mask, device, idx_kl,
-               rec_loss, rec_loss_prop_all, w_kl, loader_size):
+               rec_loss, rec_loss_prop_all, w_kl, loader_size, lambdas):
 
     kl_loss = _kl_normal_loss(*latent_dist)
 
@@ -175,7 +175,8 @@ def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
     else:
         if w_kl < 100000:
             w_kl += 1
-        loss = 1000000*rec_loss + pairwise_tc_loss + 1000000*rec_loss_prop_all\
-            + groupwise_tc_loss + w_kl * kl_loss
+        loss = lambdas[0]*rec_loss + lambdas[1]*pairwise_tc_loss +\
+            lambdas[2]*rec_loss_prop_all + lambdas[3]*groupwise_tc_loss +\
+            lambdas[4] * w_kl * kl_loss
 
     return kl_loss, pairwise_tc_loss, groupwise_tc_loss, l1norm, loss, w_kl
