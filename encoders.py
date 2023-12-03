@@ -13,8 +13,8 @@ class EncoderControlVAE(nn.Module):
             img_size,
             latent_dim_z=10,
             latent_dim_w=10,
-            hidden_dim=256,
             hid_channels=32,
+            hidden_dim=512,
             device='cpu',
             ):
         """
