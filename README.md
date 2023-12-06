@@ -26,7 +26,20 @@ TBA
 
 ## Data
 
-TBA
+Dataset used for model and experiments is created from ZDC Fast Simulation in Alice CERN project. It contains 295867 responses in (1, 44, 44) shape and value bigger than 1.
+
+Properties created for experiments:
+ - X coordinate of max pixel
+ - Y coordinate of max pixel
+ - X coordinate of mass center
+ - Y coordinate of mass center
+ - Number of non-zero pixels
+ - Categorized number of non-zero pixels (5 distinct values)
+ - Number of pixels bigger than 1 (after applying log)
+ - Sum of pixels
+ - Max pixel value
+
+All of them are scaled to 0-1 range.
 
 ## Code Structure
 ```
