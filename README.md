@@ -70,7 +70,37 @@ All of them are scaled to 0-1 range.
 
 ## Experiments
 
-TBA
+Some examples of trained model:
+
+### Generating images with given properites and random z latent space:
+
+ 1. Properties:
+    - X mass center: 10
+    - Y mass center: 30
+    - size: 0.3
+</br>
+
+<img width="1020" alt="Screenshot 2023-12-06 at 2 56 23 PM" src="https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/aad0e42b-ef6f-4ffc-9099-866d4c2fc149">
+
+</br>
+</br>
+
+ 2. Properties:
+    - X mass center: 20
+    - Y mass center: 20
+    - size: 0.9
+</br>
+
+<img width="1018" alt="Screenshot 2023-12-06 at 3 05 01 PM" src="https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/2cbe96ca-055a-4d41-adc1-c99daba9cb65">
+
+### Traversing w latent space
+
+Changing properties of responses by traversing elements in latent space, coresponding with given properties:
+</br>
+
+![animation](https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/244f1571-d704-47aa-a30c-03e8eafda6fc)
+
+</br>
 
 ## References
 
