@@ -13,6 +13,7 @@ class EncoderControlVAE(nn.Module):
             img_size,
             latent_dim_z=10,
             latent_dim_w=10,
+            latent_dim_cond=10,
             hid_channels=32,
             hidden_dim=512,
             device='cpu',
@@ -26,6 +27,7 @@ class EncoderControlVAE(nn.Module):
         self.hidden_dim = hidden_dim
         self.latent_dim_z = latent_dim_z
         self.latent_dim_w = latent_dim_w
+        self.latent_dim_cond = latent_dim_cond
         self.img_size = img_size
 
         kernel_size = 4
@@ -45,7 +47,8 @@ class EncoderControlVAE(nn.Module):
             stride=(3, 3), padding=(1, 1)).to(device)
 
         self.lin1 = nn.Linear(
-            np.product(self.reshape), self.hidden_dim).to(device)
+            np.product(self.reshape) + self.latent_dim_cond,
+            self.hidden_dim).to(device)
         self.lin2 = nn.Linear(self.hidden_dim, self.hidden_dim).to(device)
 
         # Fully connected layers for mean and variance
@@ -53,7 +56,7 @@ class EncoderControlVAE(nn.Module):
             self.hidden_dim,
             (self.latent_dim_z+self.latent_dim_w) * 2).to(device)
 
-    def forward(self, x):
+    def forward(self, x, cond):
         batch_size = x.size(0)
 
         x = torch.relu(self.conv1(x))
@@ -61,7 +64,7 @@ class EncoderControlVAE(nn.Module):
         x = torch.relu(self.conv3(x))
 
         x_z = x.view((batch_size, -1))
-        x_z = torch.relu(self.lin1(x_z))
+        x_z = torch.relu(self.lin1(torch.cat([x_z, cond], dim=-1)))
         x_z = torch.relu(self.lin2(x_z))
 
         mu_logvar = self.mu_logvar_gen(x_z)

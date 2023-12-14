@@ -14,6 +14,7 @@ class DecoderControlVAE(nn.Module):
             img_size,
             latent_dim_z=10,
             latent_dim_w=10,
+            latent_dim_cond=10,
             num_prop=2,
             hid_channels=32,
             hidden_dim=512,
@@ -32,6 +33,7 @@ class DecoderControlVAE(nn.Module):
         self.num_prop = num_prop
         self.latent_dim_z = latent_dim_z
         self.latent_dim_w = latent_dim_w
+        self.latent_dim_cond = latent_dim_cond
         self.device = device
 
         kernel_size = 4
@@ -61,7 +63,8 @@ class DecoderControlVAE(nn.Module):
             self.wp_lin_list.append(nn.Sequential(*layers))
 
         self.lin1 = nn.Linear(
-            self.latent_dim_z + self.latent_dim_w, hidden_dim).to(self.device)
+            self.latent_dim_z + self.latent_dim_w + self.latent_dim_cond,
+            hidden_dim).to(self.device)
         self.lin2 = nn.Linear(hidden_dim, hidden_dim).to(self.device)
         self.lin3 = nn.Linear(
             hidden_dim, np.product(self.reshape)).to(self.device)
@@ -95,9 +98,9 @@ class DecoderControlVAE(nn.Module):
 
         return torch.cat(wp, dim=-1)
 
-    def forward(self, z, w, w_mask):
+    def forward(self, z, w, cond, w_mask):
         batch_size = z.size(0)
-        wz = torch.cat([w, z], dim=-1)
+        wzc = torch.cat([w, z, cond], dim=-1)
         prop = []
 
         wp = self.mask(w, w_mask)
@@ -108,7 +111,7 @@ class DecoderControlVAE(nn.Module):
             prop.append(self.property_lin_list[idx](w_) + w_)
 
         # Fully connected layers with ReLu activations
-        x = torch.relu(self.lin1(wz))
+        x = torch.relu(self.lin1(wzc))
         x = torch.relu(self.lin2(x))
         x = torch.relu(self.lin3(x))
         x = x.view(batch_size, *self.reshape)

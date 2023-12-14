@@ -19,6 +19,7 @@ class ControlVAE(nn.Module):
             decoder,
             latent_dim,
             latent_dim_prop,
+            latent_dim_cond,
             num_prop,
             hid_channels=32,
             device='cpu'):
@@ -40,15 +41,18 @@ class ControlVAE(nn.Module):
         self.num_prop = num_prop
         self.latent_dim_z = latent_dim
         self.latent_dim_w = latent_dim_prop
+        self.latent_dim_cond = latent_dim_cond
+
         self.img_size = img_size
         self.num_pixels = self.img_size[1] * self.img_size[2]
         self.device = device
 
         self.encoder = encoder(img_size, self.latent_dim_z,
-                               self.latent_dim_w, hid_channels, device=device)
-        self.decoder = decoder(img_size, self.latent_dim_z,
-                               self.latent_dim_w, self.num_prop,
+                               self.latent_dim_w, self.latent_dim_cond,
                                hid_channels, device=device)
+        self.decoder = decoder(img_size, self.latent_dim_z,
+                               self.latent_dim_w, self.latent_dim_cond,
+                               self.num_prop, hid_channels, device=device)
 
         self.apply(weights_init)
         self.w_mask = torch.nn.Parameter(
@@ -71,7 +75,7 @@ class ControlVAE(nn.Module):
         eps = torch.randn_like(std)
         return mean + std * eps
 
-    def forward(self, x, tau,
+    def forward(self, x, cond, tau,
                 mask=None, w2=None, z2=None, w_mask=None, label=None):
         """
         Forward pass of model.
@@ -83,7 +87,7 @@ class ControlVAE(nn.Module):
         """
 
         latent_dist_z_mean, latent_dist_w_mean, \
-            latent_dist_z_std, latent_dist_w_std = self.encoder(x)
+            latent_dist_z_std, latent_dist_w_std = self.encoder(x, cond)
 
         latent_sample_z = self.reparameterize(
             latent_dist_z_mean, latent_dist_z_std)
@@ -103,12 +107,12 @@ class ControlVAE(nn.Module):
                 logit.to(self.device), tau, hard=True)[:, :, 1]
 
         reconstruct, y_reconstruct, _ = self.decoder(
-            latent_sample_z, latent_sample_w, mask)
+            latent_sample_z, latent_sample_w, cond, mask)
 
         latent_dist_z = (latent_dist_z_mean, latent_dist_z_std)
         latent_dist_w = (latent_dist_w_mean, latent_dist_w_std)
         return (reconstruct, y_reconstruct), latent_dist_z, latent_dist_w, \
-            latent_sample_z, latent_sample_w, mask, self.w_mask
+            latent_sample_z, latent_sample_w, mask, cond, self.w_mask
 
     def sample_latent(self, x):
         """
