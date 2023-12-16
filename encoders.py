@@ -46,26 +46,42 @@ class EncoderControlVAE(nn.Module):
             hid_channels, hid_channels, kernel_size,
             stride=(3, 3), padding=(1, 1)).to(device)
 
+        # self.lin1 = nn.Linear(
+        #     np.product(self.reshape) + self.latent_dim_cond,
+        #     self.hidden_dim).to(device)
+        # self.lin2 = nn.Linear(self.hidden_dim, self.hidden_dim).to(device)
+       
+        # self.mu_logvar_gen = nn.Linear(
+        #     self.hidden_dim ,
+        #     (self.latent_dim_z+self.latent_dim_w) * 2).to(device)
+
         self.lin1 = nn.Linear(
-            np.product(self.reshape) + self.latent_dim_cond,
-            self.hidden_dim).to(device)
-        self.lin2 = nn.Linear(self.hidden_dim, self.hidden_dim).to(device)
+            self.latent_dim_cond,
+            int(self.hidden_dim / 2)).to(device)
+        self.lin2 = nn.Linear(int(self.hidden_dim / 2), self.hidden_dim).to(device)
+        self.lin3 = nn.Linear(self.hidden_dim, self.hidden_dim * 2).to(device)
 
         # Fully connected layers for mean and variance
         self.mu_logvar_gen = nn.Linear(
-            self.hidden_dim,
+            self.hidden_dim * 2,
             (self.latent_dim_z+self.latent_dim_w) * 2).to(device)
 
     def forward(self, x, cond):
         batch_size = x.size(0)
 
-        x = torch.relu(self.conv1(x))
-        x = torch.relu(self.conv2(x))
-        x = torch.relu(self.conv3(x))
+        # x = torch.relu(self.conv1(x))
+        # x = torch.relu(self.conv2(x))
+        # x = torch.relu(self.conv3(x))
 
-        x_z = x.view((batch_size, -1))
-        x_z = torch.relu(self.lin1(torch.cat([x_z, cond], dim=-1)))
+        # x_z = x.view((batch_size, -1))
+        # x_z = torch.relu(self.lin1(torch.cat([x_z, cond], dim=-1)))
+        # x_z = torch.relu(self.lin2(x_z))
+
+        x_z = cond.view((batch_size, -1))
+
+        x_z = torch.relu(self.lin1(x_z))
         x_z = torch.relu(self.lin2(x_z))
+        x_z = torch.relu(self.lin3(x_z))
 
         mu_logvar = self.mu_logvar_gen(x_z)
         mu, logvar = mu_logvar.view(

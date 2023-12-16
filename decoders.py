@@ -62,8 +62,11 @@ class DecoderControlVAE(nn.Module):
                 ).to(device)
             self.wp_lin_list.append(nn.Sequential(*layers))
 
+        # self.lin1 = nn.Linear(
+        #     self.latent_dim_z + self.latent_dim_w + self.latent_dim_cond,
+        #     hidden_dim).to(self.device)
         self.lin1 = nn.Linear(
-            self.latent_dim_z + self.latent_dim_w + self.latent_dim_cond,
+            self.latent_dim_z + self.latent_dim_w,
             hidden_dim).to(self.device)
         self.lin2 = nn.Linear(hidden_dim, hidden_dim).to(self.device)
         self.lin3 = nn.Linear(
@@ -100,7 +103,8 @@ class DecoderControlVAE(nn.Module):
 
     def forward(self, z, w, cond, w_mask):
         batch_size = z.size(0)
-        wzc = torch.cat([w, z, cond], dim=-1)
+        # wzc = torch.cat([w, z, cond], dim=-1)
+        wzc = torch.cat([w, z], dim=-1)
         prop = []
 
         wp = self.mask(w, w_mask)
