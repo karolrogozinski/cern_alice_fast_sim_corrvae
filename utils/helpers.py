@@ -29,7 +29,7 @@ def plot_epoch(data_loader, model, device, taus, epoch, time):
             else:
                 (reconstruct_new_w, _), _, _, _, _, _, _, _ = model(
                     data[-1], cond[-1].unsqueeze(0), taus,
-                    w2=latent_sample_w[i-14])
+                    w2=latent_sample_w[i-21])
                 x = reconstruct_new_w.cpu().detach().numpy()[0][0]
 
             im = axs[i//7, i % 7].imshow(x, interpolation='none',
