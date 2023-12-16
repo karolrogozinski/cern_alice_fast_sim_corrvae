@@ -186,4 +186,5 @@ def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
             lambdas[2]*rec_loss_prop_all + lambdas[3]*groupwise_tc_loss +\
             lambdas[3]*groupwise_tc_loss_cond + lambdas[4] * w_kl * kl_loss
 
-    return kl_loss, pairwise_tc_loss, groupwise_tc_loss, l1norm, loss, w_kl
+    return kl_loss, pairwise_tc_loss, groupwise_tc_loss, \
+        groupwise_tc_loss_cond, l1norm, loss, w_kl
