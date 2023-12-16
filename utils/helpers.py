@@ -15,15 +15,20 @@ def plot_epoch(data_loader, model, device, taus, epoch, time):
         (reconstruct, _), _, _, _, latent_sample_w, _, _, _ = model(
             data, cond, taus)
 
-        fig, axs = plt.subplots(3, 7, figsize=(15, 6))
-        for i in range(21):
+        fig, axs = plt.subplots(4, 7, figsize=(15, 6))
+        for i in range(28):
             if i < 7:
                 x = data.cpu().detach().numpy()[i][0]
             elif i < 14:
                 x = reconstruct.cpu().detach().numpy()[i-7][0]
-            else:
+            elif i < 21:
                 (reconstruct_new_w, _), _, _, _, _, _, _, _ = model(
                     data[-1], cond[i-14].unsqueeze(0), taus,
+                    w2=latent_sample_w[i-14])
+                x = reconstruct_new_w.cpu().detach().numpy()[0][0]
+            else:
+                (reconstruct_new_w, _), _, _, _, _, _, _, _ = model(
+                    data[-1], cond[-1].unsqueeze(0), taus,
                     w2=latent_sample_w[i-14])
                 x = reconstruct_new_w.cpu().detach().numpy()[0][0]
 
