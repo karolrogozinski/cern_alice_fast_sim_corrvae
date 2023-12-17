@@ -178,7 +178,7 @@ def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
     l1norm = reg_mask(w_mask).to(device)
 
     if idx_kl <= 100000:
-        loss = 1000000*rec_loss + pairwise_tc_loss + 1000000*rec_loss_prop_all\
+        loss = lambdas[0]*rec_loss + pairwise_tc_loss + lambdas[2]*rec_loss_prop_all\
             + groupwise_tc_loss + groupwise_tc_loss_cond + 100000*l1norm
     else:
         if w_kl < 100000:
