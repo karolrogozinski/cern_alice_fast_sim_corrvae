@@ -167,14 +167,12 @@ def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
         latent_dist_w, loader_size
     )
     groupwise_tc_loss = beta * (log_qwz - log_prod_qwqz).mean()
-    # groupwise_tc_loss = 0
 
     _, log_qwc, log_prod_qwqc, _ = _get_log_pzw_qzw_prodzw_qzwCx(
         latent_sample_cond, latent_sample_w, latent_dist_cond,
         latent_dist_w, loader_size
     )
-    # groupwise_tc_loss_cond = beta * (log_qwc - log_prod_qwqc).mean()
-    groupwise_tc_loss_cond = 0
+    groupwise_tc_loss_cond = beta * (log_qwc - log_prod_qwqc).mean()
 
     l1norm = reg_mask(w_mask).to(device)
 
@@ -186,7 +184,7 @@ def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
             w_kl += 1
         loss = lambdas[0]*rec_loss + lambdas[1]*pairwise_tc_loss +\
             lambdas[2]*rec_loss_prop_all + lambdas[3]*groupwise_tc_loss +\
-            lambdas[3]*groupwise_tc_loss_cond + lambdas[4] * w_kl * kl_loss
+            lambdas[4]*groupwise_tc_loss_cond + lambdas[5] * w_kl * kl_loss
 
     return kl_loss, pairwise_tc_loss, groupwise_tc_loss, \
         groupwise_tc_loss_cond, l1norm, loss, w_kl

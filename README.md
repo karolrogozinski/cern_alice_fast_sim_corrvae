@@ -22,7 +22,8 @@ TBA
 
 ## Run
 
-TBA
+Running project from console is not ready yet.
+Currently used form of training is running train.ipynb, using Google Colab.
 
 ## Data
 
