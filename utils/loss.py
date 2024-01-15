@@ -152,7 +152,7 @@ def reg_mask(mask):
 def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
                latent_sample_z, latent_dist_z, w_mask, device, idx_kl,
                rec_loss, rec_loss_prop_all, w_kl, loader_size, lambdas,
-               latent_sample_cond, latent_dist_cond):
+               latent_sample_c, latent_dist_c, rec_loss_prop_cond):
 
     kl_loss = _kl_normal_loss(*latent_dist)
 
@@ -162,30 +162,40 @@ def get_losses(latent_dist, latent_sample_w, latent_dist_w, beta,
     tc_loss = (log_qw - log_prod_qwi).mean()
     pairwise_tc_loss = beta * tc_loss
 
+    # z and w diff
     _, log_qwz, log_prod_qwqz, _ = _get_log_pzw_qzw_prodzw_qzwCx(
         latent_sample_z, latent_sample_w, latent_dist_z,
         latent_dist_w, loader_size
     )
     groupwise_tc_loss = beta * (log_qwz - log_prod_qwqz).mean()
 
+    # c and w diff
     _, log_qwc, log_prod_qwqc, _ = _get_log_pzw_qzw_prodzw_qzwCx(
-        latent_sample_cond, latent_sample_w, latent_dist_cond,
+        latent_sample_c, latent_sample_w, latent_dist_c,
         latent_dist_w, loader_size
     )
     groupwise_tc_loss_cond = beta * (log_qwc - log_prod_qwqc).mean()
+
+    # c and z diff
+    _, log_qcz, log_prod_qzqc, _ = _get_log_pzw_qzw_prodzw_qzwCx(
+        latent_sample_c, latent_sample_z, latent_dist_c,
+        latent_dist_z, loader_size
+    )
+    groupwise_tc_loss_cz = beta * (log_qcz - log_prod_qzqc).mean()
 
     l1norm = reg_mask(w_mask).to(device)
 
     if idx_kl <= 100000:
         loss = 1000000*rec_loss + pairwise_tc_loss + 1000000*rec_loss_prop_all\
-            + groupwise_tc_loss + groupwise_tc_loss_cond + 100000*l1norm
+            + groupwise_tc_loss + groupwise_tc_loss_cond + 100000*l1norm\
+            + 1000000*rec_loss_prop_cond + groupwise_tc_loss_cz
     else:
         if w_kl < 100000:
             w_kl += 1
         loss = lambdas[0]*rec_loss + lambdas[1]*pairwise_tc_loss +\
             lambdas[2]*rec_loss_prop_all + lambdas[3]*groupwise_tc_loss +\
-            lambdas[4]*groupwise_tc_loss_cond + lambdas[5] * w_kl * kl_loss
+            lambdas[4]*groupwise_tc_loss_cond + lambdas[5] * w_kl * kl_loss +\
+            lambdas[6]*rec_loss_prop_cond + lambdas[7]*groupwise_tc_loss_cz
 
     return kl_loss, pairwise_tc_loss, groupwise_tc_loss, \
-        groupwise_tc_loss_cond, l1norm, loss, w_kl
-
+        groupwise_tc_loss_cond, groupwise_tc_loss_cz, l1norm, loss, w_kl
