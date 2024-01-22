@@ -46,23 +46,39 @@ class DecoderControlVAE(nn.Module):
         # decoder for the property
         self.property_lin_list = nn.ModuleList()
         for _ in range(num_prop):
+            # layers = []
+            # layers.append(spectral_norm_fc(
+            #     nn.Linear(1, hidden_dim_prop).to(self.device)))
+            # layers.append(nn.LeakyReLU(negative_slope=0.1))
+            # layers.append(spectral_norm_fc(
+            #     nn.Linear(hidden_dim_prop, 1).to(self.device)))
+            # layers.append(nn.Sigmoid())
+            # self.property_lin_list.append(nn.Sequential(*layers))
+
             layers = []
             layers.append(spectral_norm_fc(
-                nn.Linear(1, hidden_dim_prop).to(self.device)))
+                nn.Linear(1, 16).to(self.device)))
             layers.append(nn.LeakyReLU(negative_slope=0.1))
             layers.append(spectral_norm_fc(
-                nn.Linear(hidden_dim_prop, 1).to(self.device)))
+                nn.Linear(16, 1).to(self.device)))
             layers.append(nn.Sigmoid())
             self.property_lin_list.append(nn.Sequential(*layers))
 
         self.wp_lin_list = nn.ModuleList()
         for _ in range(num_prop):
+            # layers = nn.Sequential(
+            #     nn.Linear(self.latent_dim_w, self.hidden_dim),
+            #     nn.LeakyReLU(negative_slope=0.1),
+            #     nn.Linear(self.hidden_dim, self.hidden_dim),
+            #     nn.LeakyReLU(negative_slope=0.1),
+            #     nn.Linear(self.hidden_dim, 1)
+            # ).to(device)
+            # self.wp_lin_list.append(nn.Sequential(*layers))
+
             layers = nn.Sequential(
-                nn.Linear(self.latent_dim_w, self.hidden_dim),
+                nn.Linear(self.latent_dim_w, 16),
                 nn.LeakyReLU(negative_slope=0.1),
-                nn.Linear(self.hidden_dim, self.hidden_dim),
-                nn.LeakyReLU(negative_slope=0.1),
-                nn.Linear(self.hidden_dim, 1)
+                nn.Linear(16, 1)
             ).to(device)
             self.wp_lin_list.append(nn.Sequential(*layers))
 
