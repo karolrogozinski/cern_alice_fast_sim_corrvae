@@ -1,16 +1,21 @@
-# CorrVAE for manipulating properties in CERN Alice Simulations
+#  Fast simulations of the ZDC calorimeter in ALICE CERN using deep machine learning with control over the properties of generated data
 
-Refactored and modified version of CorrVAE [1], adjusted for handling images ffrom CERN Alice fast simmulations.
+Refactored and modified version of CorrVAE [1], adjusted for handling images from CERN Alice fast simmulations.
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Requirements](#requirements)
-3. [Run](#run)
-4. [Data](#data)
-5. [Code Structure](#code-structure)
-6. [Experiments](#experiments)
-7. [References](#references)
+1. [Purpose of the project](#purpose_of_the_project)
+2. [Project Overview](#project-overview)
+3. [Requirements](#requirements)
+4. [Run](#run)
+5. [Data](#data)
+6. [Code Structure](#code-structure)
+7. [Experiments](#experiments)
+8. [References](#references)
+
+## Purpose of the project
+
+The development of collision simulations at the Large Hadron Collider at CERN has sparked the research of innovative methods aimed at reducing costs and shortening the time needed for simulation, going beyond conventional approaches based on Monte Carlo methods. Machine learning generative methods have been employed for this purpose, which, although not always yielding perfect results, are much faster and simpler to implement. The simulation challenge then boils down to generating an image based on particle data. This work focuses on creating a solution that, through control of the generated data properties, could be a valuable alternative to currently employed algorithms. Drawing from a review of existing solutions, a model was utilized as a prototype and a foundation for further work, enabling user-defined parameter manipulation of the image. It was then adapted to the discussed problem and enhanced with new functionalities. One of the main additions was conditioning the model based on particle data, a common element in such solutions. The implemented model achieved very promising results and could be implemented as an alternative solution for simulating the ZDC calorimeter in the ALICE detector under real conditions.
 
 ## Project Overview
 
