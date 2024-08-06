@@ -15,11 +15,8 @@ Refactored and modified version of CorrVAE [1], adjusted for handling images fro
 
 ## Project Overview
 
-TBA
-
-## Requirements
-
-TBA
+You can find detailed model description in below paper:
+https://arxiv.org/pdf/2405.14049
 
 ## Run
 
