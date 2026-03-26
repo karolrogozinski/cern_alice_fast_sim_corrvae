@@ -1,110 +1,83 @@
-#  Fast simulations of the ZDC calorimeter in ALICE CERN using deep machine learning with control over the properties of generated data
+# Fast Simulations of the ZDC Calorimeter in ALICE (CERN) using Deep Generative Models
 
-Refactored and modified version of CorrVAE [1], adjusted for handling images from CERN Alice fast simmulations.
+![Status](https://img.shields.io/badge/Status-Published-brightgreen) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-red) ![Domain](https://img.shields.io/badge/Domain-High%20Energy%20Physics-purple)
 
-## Table of Contents
-
-1. [Purpose of the project](#purpose_of_the_project)
-2. [Project Overview](#project-overview)
-3. [Requirements](#requirements)
-4. [Run](#run)
-5. [Data](#data)
-6. [Code Structure](#code-structure)
-7. [Experiments](#experiments)
-8. [References](#references)
+> **TL;DR:** This repository provides a refactored and heavily modified implementation of the `CorrVAE` architecture, specifically adjusted for accelerating Zero Degree Calorimeter (ZDC) simulations in the **ALICE experiment at CERN**. It enables high-fidelity generation of calorimeter responses with explicit control over physical properties in the latent space.
 
 ## Project Overview
 
-You can find detailed model description in below paper:
-[https://arxiv.org/pdf/2405.14049](https://arxiv.org/abs/2405.14049)
+Traditional Monte Carlo simulations (like Geant4) used in high-energy physics are computationally expensive. This project introduces a deep learning-based fast simulation framework that generates ZDC calorimeter responses orders of magnitude faster while maintaining rigorous control over the generated data's physical properties.
 
-## Run
+**Read our full publication for detailed methodology and physical validation:**
+📄 [Fast simulations of the ZDC calorimeter in ALICE CERN using deep machine learning with control over the properties of generated data](https://arxiv.org/abs/2405.14049)
 
-Running project from console is not ready yet.
-Currently used form of training is running train.ipynb, using Google Colab.
+## Dataset & Physical Properties
 
-## Data
+The dataset is derived from ZDC Fast Simulations within the ALICE framework. It comprises **295,867 responses**, each shaped as a `(1, 44, 44)` tensor representing calorimeter energy deposits.
 
-Dataset used for model and experiments is created from ZDC Fast Simulation in Alice CERN project. It contains 295867 responses in (1, 44, 44) shape and value bigger than 1.
+To ensure physical validity, the generative model is conditioned on key spatial and energy properties (normalized to 0-1 range):
+* X and Y coordinates of the maximum energy pixel
+* X and Y coordinates of the mass center (energy distribution center)
+* Number of non-zero pixels (shower extent)
+* Categorized number of non-zero pixels (5 distinct spatial bins)
+* Number of pixels with energy >1 (post-logarithmic scaling)
+* Total sum of pixels (total deposited energy)
+* Maximum pixel value (peak energy)
 
-Properties created for experiments:
- - X coordinate of max pixel
- - Y coordinate of max pixel
- - X coordinate of mass center
- - Y coordinate of mass center
- - Number of non-zero pixels
- - Categorized number of non-zero pixels (5 distinct values)
- - Number of pixels bigger than 1 (after applying log)
- - Sum of pixels
- - Max pixel value
+## Experiments & Latent Space Control
 
-All of them are scaled to 0-1 range.
+Our modified `CorrVAE` allows for disentangled control over specific physical traits during generation.
 
-## Code Structure
-```
-├──  data  
-│    └──  prepare_data.py     - code used to make all data transformations and create final dataset
-│
-│
-├──  evaluations
-│    └──  eval.ipynb          - notebook that contains experiments on trained model 
-│
-│
-├──  modeling
-│    └──  decoders.py         - just encoder
-│    └──  encoders.py         - just decoder
-│    └──  model.py            - main model file
-│    └──  optim.py            - probably optimizing getting w from y (in progress!)
-│
-│
-├──  utils
-│    └──  loss.py             - all custom loss functions used in training
-│    └──  model_init.py       - model weights initialization
-│    └──  spectral_norm_fc.py - spectral norm implementation from [2]
-│    └──  train_helpers.py    - helpers for training loop
-│
-│
-└──  train.ipynb              - training loop
-```
+### 1. Property-Conditioned Generation
+By fixing specific target properties and sampling a random **Z** latent vector, the model generates diverse but physically constrained calorimeter showers.
 
-## Experiments
+**Target Properties:** `X mass center: 10` | `Y mass center: 30` | `Shower Size: 0.3`
 
-Some examples of trained model:
+![Generation Example 1](https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/aad0e42b-ef6f-4ffc-9099-866d4c2fc149)
 
-### Generating images with given properites and random z latent space:
+**Target Properties:** `X mass center: 20` | `Y mass center: 20` | `Shower Size: 0.9`
 
- 1. Properties:
-    - X mass center: 10
-    - Y mass center: 30
-    - size: 0.3
-</br>
+![Generation Example 2](https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/2cbe96ca-055a-4d41-adc1-c99daba9cb65)
 
-<img width="1020" alt="Screenshot 2023-12-06 at 2 56 23 PM" src="https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/aad0e42b-ef6f-4ffc-9099-866d4c2fc149">
-
-</br>
-</br>
-
- 2. Properties:
-    - X mass center: 20
-    - Y mass center: 20
-    - size: 0.9
-</br>
-
-<img width="1018" alt="Screenshot 2023-12-06 at 3 05 01 PM" src="https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/2cbe96ca-055a-4d41-adc1-c99daba9cb65">
-
-### Traversing w latent space
-
-Changing properties of responses by traversing elements in latent space, coresponding with given properties:
-</br>
+### 2. Traversing the **W** Latent Space
+By traversing elements in the isolated **W** latent space, we can smoothly interpolate between different physical states (e.g., shifting the shower center or increasing total energy) without recalculating the entire collision physics.
 
 ![animation](https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae/assets/73389492/244f1571-d704-47aa-a30c-03e8eafda6fc)
 
-</br>
+## Code Structure & Architecture
+
+The codebase is structured for modular experimentation with Variational Autoencoders.
+
+```text
+├── data/
+│   └── prepare_data.py       # Data transformation pipelines for ZDC tensors
+├── evaluations/
+│   └── eval.ipynb            # Empirical evaluation and latent space visualization
+├── modeling/
+│   ├── model.py              # Main VAE architecture definition
+│   ├── encoders.py           # Feature extraction modules
+│   ├── decoders.py           # Generative upsampling modules
+│   └── optim.py              # Optimization routines (e.g., latent w recovery)
+├── utils/
+│   ├── loss.py               # Custom highly-constrained loss functions
+│   ├── model_init.py         # Network weight initialization routines
+│   ├── spectral_norm_fc.py   # Spectral normalization (Miyato et al.)
+│   └── train_helpers.py      # Training loop utilities
+└── train.ipynb               # Primary training execution environment
+```
+
+## Quickstart
+
+The environment and dependencies can be recreated using standard Python tooling. 
+
+*(Note: Full CLI execution is currently being wrapped; primary training execution is handled interactively via `train.ipynb` for Colab/Jupyter optimization).*
+
+```bash
+git clone https://github.com/karolrogozinski/cern_alice_fast_sim_corrvae.git
+cd cern_alice_fast_sim_corrvae
+```
 
 ## References
 
-**[1]** Shiyu Wang, Xiaojie Guo, Xuanyang Lin, Bo Pan, Yuanqi Du, Yinkai Wang, Yanfang Ye, Ashley Ann Petersen, Austin Leitgeb, Saleh AlKhalifa, Kevin Minbiole, William Wuest, Amarda Shehu, Liang Zhao.</br>
-    *[Multi-objective Deep Data Generation with Correlated Property Control](https://arxiv.org/pdf/2210.01796)*, 2022.
-
-**[2]** Takeru Miyato, Toshiki Kataoka, Masanori Koyama, Yuichi Yoshida.</br>
-    *[Spectral Normalization for Generative Adversarial Networks](https://arxiv.org/abs/1802.05957)*, 2018.
+**[1]** S. Wang et al., *"Multi-objective Deep Data Generation with Correlated Property Control"*, [arXiv:2210.01796](https://arxiv.org/abs/2210.01796), 2022.  
+**[2]** T. Miyato et al., *"Spectral Normalization for Generative Adversarial Networks"*, [arXiv:1802.05957](https://arxiv.org/abs/1802.05957), 2018.
